@@ -36,3 +36,22 @@ jobs:
           name: debug-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 14
+
+      - name: Get version info
+        id: version
+        run: |
+          echo "date=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0-${{ steps.version.outputs.date }}
+          name: Debug Build ${{ steps.version.outputs.date }}
+          body: |
+            Auto-generated debug build
+            Commit: ${{ steps.version.outputs.sha_short }}
+          files: app/build/outputs/apk/debug/*.apk
+          draft: false
+          prerelease: true
